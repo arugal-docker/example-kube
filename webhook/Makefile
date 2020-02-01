@@ -22,7 +22,7 @@ kube: image
 .PHONY: kube
 
 validating:
-	cat validatingwebhook.yaml | ../webhook-patch-ca-bundle.sh > validatingwebhook-ca-bundle-temp.yaml \
-	&& kubectl apply -f validatingwebhook-ca-bundle-temp.yaml
+	cat mutating-webhook-configuration.yaml | ../webhook-patch-ca-bundle.sh > mutating-webhook-configuration.yaml \
+	&& kubectl apply -f mutating-webhook-configuration-ca-bundle-temp.yaml
 
 .PHONY: validating

@@ -1,16 +1,17 @@
 apiVersion: admissionregistration.k8s.io/v1beta1
-kind: ValidatingWebhookConfiguration
+kind: MutatingWebhookConfiguration
 metadata:
-  name: validation-webhook-example-cfg
+  namespace: admission-webhook
+  name: mutating-webhook-example-cfg
   labels:
     app: admission-webhook-example
 webhooks:
-  - name: required-labels.banzaicloud.com
+  - name: mutating-example.qikqiak.com
     clientConfig:
       service:
-        name: admission-webhook-example-webhook-svc
-        namespace: default
-        path: "/add-label"
+        name: admission-webhook-example
+        namespace: admission-webhook
+        path: /add-label
       caBundle: ${CA_BUNDLE}
     rules:
       - operations: [ "CREATE" ]
