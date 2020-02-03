@@ -5,7 +5,6 @@ GOLANG_VERSION ?= latest
 SRC_DIR = $(notdir $(shell pwd))
 export
 
-
 bin:
 	../image-util.sh bin $(SRCS)
 
@@ -16,13 +15,13 @@ image:
 
 .PHONY: image
 
-kube: image
+webhook: image
 	kubectl apply -f webhook.yaml
 
-.PHONY: kube
+.PHONY: webhook
 
-validating:
-	cat mutating-webhook-configuration.yaml | ../webhook-patch-ca-bundle.sh > mutating-webhook-configuration.yaml \
+mutating: webhook
+	cat mutating-webhook-configuration.yaml | ../webhook-patch-ca-bundle.sh > mutating-webhook-configuration-ca-bundle-temp.yaml \
 	&& kubectl apply -f mutating-webhook-configuration-ca-bundle-temp.yaml
 
-.PHONY: validating
+.PHONY: mutating

@@ -9,7 +9,7 @@ webhooks:
   - name: mutating-example.qikqiak.com
     clientConfig:
       service:
-        name: admission-webhook-example
+        name: admission-webhook-example-svc
         namespace: admission-webhook
         path: /add-label
       caBundle: ${CA_BUNDLE}
