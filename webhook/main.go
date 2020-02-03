@@ -34,8 +34,11 @@ type admitFunc func(v1beta1.AdmissionReview) *v1beta1.AdmissionResponse
 func serve(w http.ResponseWriter, r *http.Request, admit admitFunc) {
 	var body []byte
 	if r.Body != nil {
-		if data, err := ioutil.ReadAll(r.Body); err != nil {
+		if data, err := ioutil.ReadAll(r.Body); err == nil {
 			body = data
+		} else {
+			log.Errorf("read request body err: %v", err)
+			return
 		}
 	}
 
