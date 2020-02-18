@@ -11,7 +11,7 @@ bin:
 .PHONY: bin
 
 image:
-	docker build -t admission-webhook:1.0 ../
+	docker build -f Dockerfile -t admission-webhook:1.0 ../
 
 .PHONY: image
 
@@ -25,3 +25,11 @@ mutating: webhook
 	&& kubectl apply -f mutating-webhook-configuration-ca-bundle-temp.yaml
 
 .PHONY: mutating
+
+clean:
+	kubectl delete -f webhook.yaml \
+	&& kubectl delete -f mutating-webhook-configuration.yaml \
+	&& docker rmi admission-webhook:1.0 \
+	&& docker system prune
+
+.PHONY: clean

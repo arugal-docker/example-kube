@@ -7,7 +7,7 @@ RUN mkdir /example-kube
 WORKDIR /example-kube
 
 ADD . /example-kube/
-RUN make -C webhook/Makefile bin
+RUN make -f webhook/Makefile bin
 
 
 FROM alpine:3.10

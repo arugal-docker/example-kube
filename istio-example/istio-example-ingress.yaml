@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: consumer
+  namespace: default
+spec:
+  rules:
+    - host: default.consumer.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: consumer
+              servicePort: 8080
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: provider
+  namespace: default
+spec:
+  rules:
+    - host: default.provider.com
+      http:
+        paths:
+          - path: /
+            backend:
+              serviceName: provider
+              servicePort: 8081

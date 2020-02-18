@@ -6,7 +6,7 @@ metadata:
   labels:
     app: admission-webhook-example
 webhooks:
-  - name: mutating-example.qikqiak.com
+  - name: admission-webhook-example.qikqiak.com
     clientConfig:
       service:
         name: admission-webhook-example-svc
