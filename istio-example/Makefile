@@ -7,7 +7,7 @@ export
 
 
 image:
-	./setup.sh
+	bash setup.sh
 
 .PHONY: image
 

@@ -7,15 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	addFirstLabelPatch string = `[
-         { "op": "add", "path": "/metadata/labels", "value": {"added-label": "yes"}}
-     ]`
-	addAdditionalLabelPatch string = `[
-         { "op": "add", "path": "/metadata/labels/added-label", "value": "yes" }
-     ]`
-)
-
 // Add a label {"added-label": "yes"} to the object
 func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	log.Info("calling add-label")
@@ -32,11 +23,28 @@ func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 
 	reviewResponse := v1beta1.AdmissionResponse{}
 	reviewResponse.Allowed = true
+
+	var patches []patchOperation
 	if len(obj.ObjectMeta.Labels) == 0 {
-		reviewResponse.Patch = []byte(addFirstLabelPatch)
+		labels := make(map[string]string)
+		labels["added-label"] = "yes"
+		patches = append(patches, patchOperation{
+			Op:    "add",
+			Path:  "/metadata/labels",
+			Value: labels,
+		})
 	} else {
-		reviewResponse.Patch = []byte(addAdditionalLabelPatch)
+		patches = append(patches, patchOperation{
+			Op:    "add",
+			Path:  "/metadata/labels/added-label",
+			Value: "yes",
+		})
 	}
+	patch, err := json.Marshal(patches)
+	if err != nil {
+		log.Errorf("patches marshal err: %v", err)
+	}
+	reviewResponse.Patch = patch
 	pt := v1beta1.PatchTypeJSONPatch
 	reviewResponse.PatchType = &pt
 	return &reviewResponse
