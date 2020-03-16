@@ -1,11 +1,10 @@
 FROM golang:1.13
 
-ENV GOPROXY=https://goproxy.io
-ENV CGO_ENABLED=0
+ENV GO111MODULE=on
 
 RUN mkdir /example-kube
-WORKDIR /example-kube
 ADD . /example-kube
+WORKDIR /example-kube
 RUN go build -o bin/consumer ./istio-example/consumer/main.go
 
 FROM alpine:3.10
