@@ -1,5 +1,6 @@
 FROM golang:1.13
 
+ENV CGO_ENABLED=0
 ENV GO111MODULE=on
 
 RUN mkdir /example-kube
@@ -9,7 +10,7 @@ RUN go build -o bin/provider ./istio-example/provider/main.go
 
 FROM alpine:3.10
 
-RUN mkdir /app
-COPY --from=0 /example-kube/bin/provider /app/provider
-ENTRYPOINT ["/app/provider"]
+COPY --from=0 /example-kube/bin/provider .
+
+ENTRYPOINT ["/provider"]
 EXPOSE 8080
