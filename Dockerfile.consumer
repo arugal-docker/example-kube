@@ -10,7 +10,6 @@ RUN go build -o bin/consumer ./istio-example/consumer/main.go
 FROM alpine:3.10
 
 RUN mkdir /app
-WORKDIR /app
-COPY --from=0 /example-kube/bin/consumer .
-ENTRYPOINT ["./consumer"]
+COPY --from=0 /example-kube/bin/consumer /app/consumer
+ENTRYPOINT ["/app/consumer"]
 EXPOSE 8081

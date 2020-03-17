@@ -19,8 +19,8 @@ spec:
     spec:
       containers:
         - name: provider
-          image: provider:1.0
-          imagePullPolicy: IfNotPresent
+          image: registry.cn-hangzhou.aliyuncs.com/example-kube/provider:1.0
+          imagePullPolicy: Always
           ports:
             - containerPort: 8081
 ---
@@ -45,11 +45,11 @@ spec:
     spec:
       containers:
         - name: consumer
-          image: consumer:1.0
+          image: registry.cn-hangzhou.aliyuncs.com/example-kube/consumer:1.0
           args:
             - --provider
             - provider
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
 ---
