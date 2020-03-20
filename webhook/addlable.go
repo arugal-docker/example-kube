@@ -16,6 +16,7 @@ type Resource struct {
 // Add a label {"added-label": "yes"} to the object
 func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	log.Infof("calling add-label %v", string(ar.Request.Object.Raw))
+
 	obj := Resource{}
 	raw := ar.Request.Object.Raw
 	err := json.Unmarshal(raw, &obj)
