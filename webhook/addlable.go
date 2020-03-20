@@ -9,7 +9,7 @@ import (
 
 // Add a label {"added-label": "yes"} to the object
 func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
-	log.Info("calling add-label")
+	log.Info("calling add-label %v", ar.Request.Object)
 	obj := struct {
 		metav1.ObjectMeta
 		Data map[string]string
@@ -36,8 +36,6 @@ func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 			Value: labels,
 		})
 	} else {
-		log.Infof("Labels: %v", obj.Labels)
-		log.Infof("ObjectMeta Labels: %v", obj.Labels)
 		patches = append(patches, patchOperation{
 			Op:    "add",
 			Path:  "/metadata/labels/added-label",

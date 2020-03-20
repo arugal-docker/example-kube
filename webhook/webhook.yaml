@@ -19,6 +19,7 @@ spec:
       containers:
         - name: admission-webhook
           image: registry.cn-hangzhou.aliyuncs.com/example-kube/webhook:1.0
+          imagePullPolicy: Always
           args:
             - "-tls-cert-file"
             - /etc/webhook/certs/cert.pem
