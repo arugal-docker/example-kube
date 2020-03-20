@@ -21,8 +21,8 @@ func main() {
 	r.POST("/payload", func(c *gin.Context) {
 		if c.Request.Body != nil {
 			var body []byte
-			n, err := c.Request.Body.Read(body)
-			if err == nil && n > 0 {
+			_, err := c.Request.Body.Read(body)
+			if err == nil {
 				trigger := Trigger{}
 				err = json.Unmarshal(body, trigger)
 				if err == nil {
@@ -31,11 +31,6 @@ func main() {
 			}
 		}
 		c.Status(200)
-	})
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
 	})
 	_ = r.Run(config.Addr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
