@@ -25,15 +25,19 @@ func addLabel(ar v1beta1.AdmissionReview) *v1beta1.AdmissionResponse {
 	reviewResponse.Allowed = true
 
 	var patches []patchOperation
+	log.Infof("Labels: %v", obj.Labels)
+	log.Infof("ObjectMeta Labels: %v", obj.Labels)
 	if len(obj.ObjectMeta.Labels) == 0 {
 		labels := make(map[string]string)
-		labels["added-label"] = "yes"
+		labels["added-label"] = "first-label"
 		patches = append(patches, patchOperation{
 			Op:    "add",
 			Path:  "/metadata/labels",
 			Value: labels,
 		})
 	} else {
+		log.Infof("Labels: %v", obj.Labels)
+		log.Infof("ObjectMeta Labels: %v", obj.Labels)
 		patches = append(patches, patchOperation{
 			Op:    "add",
 			Path:  "/metadata/labels/added-label",

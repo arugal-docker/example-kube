@@ -15,7 +15,7 @@ image:
 
 .PHONY: image
 
-webhook: image
+webhook:
 	kubectl apply -f webhook.yaml
 
 .PHONY: webhook
