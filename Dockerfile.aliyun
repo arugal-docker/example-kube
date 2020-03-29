@@ -8,8 +8,8 @@ RUN mkdir /example-kube
 ADD . /example-kube/
 
 WORKDIR /example-kube
-RUN go build -o aliyun/bin ./aliyun/
+RUN go build -o ./aliyun/bin/app ./aliyun/
 
 FROM alpine:3.10
-COPY  --from=0 /example-kube/aliyun/bin/aliyun .
-ENTRYPOINT ["/aliyun"]
+COPY  --from=0 /example-kube/aliyun/bin/app .
+ENTRYPOINT ["/app"]
