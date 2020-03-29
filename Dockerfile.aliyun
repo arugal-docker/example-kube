@@ -11,5 +11,5 @@ WORKDIR /example-kube
 RUN go build -o aliyun/bin ./aliyun/
 
 FROM alpine:3.10
-COPY  --from=0 /example-kube/aliyun/bin/aliyun /aliyun
+COPY  --from=0 /example-kube/aliyun/bin/aliyun .
 ENTRYPOINT ["/aliyun"]
