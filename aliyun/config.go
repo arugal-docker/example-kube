@@ -7,9 +7,11 @@ import (
 )
 
 type Config struct {
-	Addr       string
-	kubeConfig string
-	Namespace  string
+	Addr          string
+	kubeConfig    string
+	Namespace     string
+	GotifyAddress string
+	GotifyToken   string
 }
 
 func (c *Config) addFlags() {
@@ -20,7 +22,8 @@ func (c *Config) addFlags() {
 		flag.StringVar(&c.kubeConfig, "kubeconfig", "", "absolute path to the kubeconfig file")
 	}
 	flag.StringVar(&c.Namespace, "namespace", c.Namespace, "kubernetes namespace")
-
+	flag.StringVar(&c.GotifyAddress, "gotify-addr", c.GotifyAddress, "gotify address")
+	flag.StringVar(&c.GotifyToken, "gotify-token", c.GotifyToken, "gotify token")
 }
 
 type Trigger struct {

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/arugal-docker/example-kube/logger"
 	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	apiv1 "k8s.io/api/core/v1"
@@ -31,7 +32,22 @@ var (
 	clientSet *kubernetes.Clientset
 )
 
-func delPods(namespace string, trigger Trigger) {
+func gotify(title string, message string) {
+	client := resty.New()
+
+	format := make(map[string]string)
+	format["title"] = title
+	format["message"] = message
+
+	_, err := client.R().
+		SetFormData(format).
+		Post(fmt.Sprintf("http://%s/message?token=%s", config.GotifyAddress, config.GotifyToken))
+	if err != nil {
+		log.Errorf("gotify error, err:%s address:%s, token:%s", err, config.GotifyAddress, config.GotifyToken)
+	}
+}
+
+func handler(namespace string, trigger Trigger) {
 	once.Do(func() {
 		config, err := clientcmd.BuildConfigFromFlags("", config.kubeConfig)
 		if err != nil {
@@ -57,16 +73,15 @@ func delPods(namespace string, trigger Trigger) {
 				if err != nil {
 					log.Errorf("%s delete error, err: %v", p.Name, err)
 				}
+				gotify("pod update", fmt.Sprintf("delete pod %s/%s", p.Namespace, p.Name))
 				log.Infof("delete pod %s/%s", p.Namespace, p.Name)
 				break
 			}
 		}
 	}
-
 }
 
 func main() {
-
 	config.addFlags()
 	flag.Parse()
 
@@ -91,7 +106,7 @@ func main() {
 	})
 	go func() {
 		for trigger := range triggerCh {
-			delPods(config.Namespace, trigger)
+			handler(config.Namespace, trigger)
 		}
 	}()
 	_ = r.Run(config.Addr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
