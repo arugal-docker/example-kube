@@ -79,13 +79,13 @@ func main() {
 				log.Errorf("Read body err: %v", err)
 				return
 			}
+			log.Infof("received trigger: %s", string(body))
 			trigger := Trigger{}
-			err = json.Unmarshal(body, trigger)
+			err = json.Unmarshal(body, &trigger)
 			if err != nil {
 				log.Infof("Unmarshal err: %v", err)
 				return
 			}
-			log.Infof("received trigger: %s", string(body))
 			triggerCh <- trigger
 		}
 	})
