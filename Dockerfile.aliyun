@@ -1,0 +1,15 @@
+FROM golang:1.13
+
+ENV GOPROXY=https://goproxy.io
+ENV CGO_ENABLED=0
+
+RUN mkdir /example-kube
+
+ADD . /example-kube/
+
+WORKDIR /example-kube
+RUN go build -o aliyun/bin ./aliyun/
+
+FROM alpine:3.10
+COPY  --from=0 /example-kube/aliyun/bin/aliyun /aliyun
+ENTRYPOINT ["/aliyun"]

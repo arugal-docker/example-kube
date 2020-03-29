@@ -1,13 +1,26 @@
 package main
 
-import "flag"
+import (
+	"flag"
+	"k8s.io/client-go/util/homedir"
+	"path/filepath"
+)
 
 type Config struct {
-	Addr string
+	Addr       string
+	kubeConfig string
+	Namespace  string
 }
 
 func (c *Config) addFlags() {
 	flag.StringVar(&c.Addr, "addr", c.Addr, "server address")
+	if home := homedir.HomeDir(); home != "" {
+		flag.StringVar(&c.kubeConfig, "kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		flag.StringVar(&c.kubeConfig, "kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.StringVar(&c.Namespace, "namespace", c.Namespace, "kubernetes namespace")
+
 }
 
 type Trigger struct {

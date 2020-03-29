@@ -1,11 +1,18 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
+	"fmt"
 	"github.com/arugal-docker/example-kube/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"io/ioutil"
+	apiv1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	"sync"
 )
 
 var log *logrus.Logger
@@ -14,8 +21,52 @@ func init() {
 	log = logger.Log
 }
 
+var (
+	config = Config{
+		Addr:      ":8080",
+		Namespace: apiv1.NamespaceDefault,
+	}
+	triggerCh = make(chan Trigger, 10)
+	once      sync.Once
+	clientSet *kubernetes.Clientset
+)
+
+func delPods(namespace string, trigger Trigger) {
+	once.Do(func() {
+		config, err := clientcmd.BuildConfigFromFlags("", config.kubeConfig)
+		if err != nil {
+			panic(err)
+		}
+		clientSet, err = kubernetes.NewForConfig(config)
+		if err != nil {
+			panic(err)
+		}
+	})
+
+	podsClient := clientSet.CoreV1().Pods(namespace)
+
+	pods, err := podsClient.List(metav1.ListOptions{})
+	if err != nil {
+		log.Errorf("%s pod list error, err: %v", namespace, err)
+		return
+	}
+	for _, p := range pods.Items {
+		for _, c := range p.Spec.Containers {
+			if c.Image == fmt.Sprintf("registry.%s.aliyuncs.com/%s:%s", trigger.Repository.Region, trigger.Repository.RepoFullName, trigger.PushData.Tag) {
+				err := podsClient.Delete(p.Name, &metav1.DeleteOptions{})
+				if err != nil {
+					log.Errorf("%s delete error, err: %v", p.Name, err)
+				}
+				log.Infof("delete pod %s/%s", p.Namespace, p.Name)
+				break
+			}
+		}
+	}
+
+}
+
 func main() {
-	config := Config{Addr: ":8080"}
+
 	config.addFlags()
 	flag.Parse()
 
@@ -28,8 +79,20 @@ func main() {
 				log.Errorf("Read body err: %v", err)
 				return
 			}
-			log.Infof("%s", string(body))
+			trigger := Trigger{}
+			err = json.Unmarshal(body, trigger)
+			if err != nil {
+				log.Infof("Unmarshal err: %v", err)
+				return
+			}
+			log.Infof("received trigger: %s", string(body))
+			triggerCh <- trigger
 		}
 	})
+	go func() {
+		for trigger := range triggerCh {
+			delPods(config.Namespace, trigger)
+		}
+	}()
 	_ = r.Run(config.Addr) // listen and serve on 0.0.0.0:8080 (for windows "localhost:8080")
 }
