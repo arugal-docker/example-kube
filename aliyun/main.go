@@ -33,6 +33,10 @@ var (
 )
 
 func gotify(title string, message string) {
+	if config.GotifyAddress == "" || config.GotifyToken == "" {
+		return
+	}
+
 	client := resty.New()
 
 	format := make(map[string]string)
