@@ -1,19 +1,21 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io/ioutil"
+	"sync"
+
 	"github.com/arugal-docker/example-kube/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
 	"github.com/sirupsen/logrus"
-	"io/ioutil"
 	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"sync"
 )
 
 var log *logrus.Logger
@@ -65,7 +67,7 @@ func handler(namespace string, trigger Trigger) {
 
 	podsClient := clientSet.CoreV1().Pods(namespace)
 
-	pods, err := podsClient.List(metav1.ListOptions{})
+	pods, err := podsClient.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		log.Errorf("%s pod list error, err: %v", namespace, err)
 		return
@@ -73,7 +75,7 @@ func handler(namespace string, trigger Trigger) {
 	for _, p := range pods.Items {
 		for _, c := range p.Spec.Containers {
 			if c.Image == fmt.Sprintf("registry.%s.aliyuncs.com/%s:%s", trigger.Repository.Region, trigger.Repository.RepoFullName, trigger.PushData.Tag) {
-				err := podsClient.Delete(p.Name, &metav1.DeleteOptions{})
+				err := podsClient.Delete(context.TODO(), p.Name, metav1.DeleteOptions{})
 				if err != nil {
 					log.Errorf("%s delete error, err: %v", p.Name, err)
 				}

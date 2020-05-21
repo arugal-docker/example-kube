@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"os"
+
 	"github.com/arugal-docker/example-kube/logger"
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"io/ioutil"
-	"net/http"
-	"os"
 )
 
 var (

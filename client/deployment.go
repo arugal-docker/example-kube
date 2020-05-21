@@ -2,16 +2,29 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"flag"
 	"fmt"
-	"k8s.io/client-go/kubernetes"
 	"os"
 	"path/filepath"
+
+	"github.com/arugal-docker/example-kube/logger"
+	"github.com/sirupsen/logrus"
+	"k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/metadata"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
 )
+
+var log *logrus.Logger
+
+func init() {
+	log = logger.Log
+}
 
 func main() {
 	var kubeconfig *string
@@ -20,6 +33,7 @@ func main() {
 	} else {
 		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
 	}
+	namespace := *flag.String("namespace", "kube-system", "")
 	flag.Parse()
 
 	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
@@ -31,12 +45,17 @@ func main() {
 		panic(err)
 	}
 
-	deploymentsClient := clientset.AppsV1().Deployments("admission-webhook")
+	metadataClient, err := metadata.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	deploymentsClient := clientset.AppsV1().Deployments(namespace)
 
 	// List Deployments
 	prompt()
-	fmt.Printf("Listing deployments in namespace %q:\n", "admission-webhook")
-	list, err := deploymentsClient.List(metav1.ListOptions{})
+	fmt.Printf("Listing deployments in namespace %q:\n", namespace)
+	list, err := deploymentsClient.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -44,18 +63,29 @@ func main() {
 		fmt.Printf(" * %s (%d replicas)\n", d.Name, *d.Spec.Replicas)
 	}
 
-	podsClient := clientset.CoreV1().Pods("admission-webhook")
+	podsClient := clientset.CoreV1().Pods(namespace)
 
 	// List Pods
 	prompt()
-	pods, err := podsClient.List(metav1.ListOptions{})
+	pods, err := podsClient.List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
 	for _, p := range pods.Items {
-		fmt.Printf(" del %s \n", p.Name)
+		nodeResource := schema.GroupVersionResource{Group: "", Version: "v1", Resource: "nodes"}
+		raw, err := metadataClient.Resource(nodeResource).Get(context.TODO(), p.Spec.NodeName, metav1.GetOptions{})
+		if err != nil {
+			log.Warnf("unable to get node %q for pod %q: %v", p.Spec.NodeName, p.Name, err)
+			return
+		}
+		nodeMeta, err := meta.Accessor(raw)
+		if err != nil {
+			log.Warnf("unable to get node meta: %v", nodeMeta)
+			return
+		}
+		log.Println(nodeMeta)
+		fmt.Printf(" pod name %s \n", p.Name)
 	}
-
 }
 
 func prompt() {

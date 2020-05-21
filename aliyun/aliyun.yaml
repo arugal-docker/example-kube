@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: default
+  name: aliyun-trigger
+  labels:
+    app: aliyun-trigger
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aliyun-trigger
+  template:
+    metadata:
+      labels:
+        app: aliyun-trigger
+    spec:
+      containers:
+        - name: aliyun-trigger
+          image: registry.cn-hangzhou.aliyuncs.com/example-kube/aliyun-trigger:1.0
+          imagePullPolicy: Always
+          args:
+            - "--namespace"
+            - "admission-webhook"
+            - "--kubeconfig"
+            - "/home/zhangwei/.kube/config"
+            - "--gotify-addr"
+            - "hz.zhangwei.asia:55099"
+            - "--gotify-token"
+            - "AFNdro.dLVoVczW"
+          volumeMounts:
+            - mountPath: /home/zhangwei/.minikube
+              name: minikube-config
+            - mountPath: /home/zhangwei/.kube
+              name: kube-config
+      volumes:
+        - name: minikube-config
+          hostPath:
+            path: /home/zhangwei/.minikube
+        - name: kube-config
+          hostPath:
+            path: /home/zhangwei/.kube
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: default
+  name: aliyun-trigger
+  labels:
+    app: aliyun-trigger
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  type: NodePort
+  selector:
+    app: aliyun-trigger
